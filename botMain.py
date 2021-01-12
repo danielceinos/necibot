@@ -4,15 +4,23 @@ from discord.ext import commands
 
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix = '!', intents = intents)
+guild_vc = {}
 
 @bot.command()
 async def play(ctx, sound):
+    await ctx.message.delete()
+    if ctx.guild.id in guild_vc:
+        vc = guild_vc[ctx.guild.id]
+        vc.stop()
+        await vc.disconnect()
     print('Called play with {0}'.format(sound))
     channel = ctx.author.voice.channel
     vc =  await channel.connect()
     player = vc.play(discord.FFmpegPCMAudio('./{0}.mp3'.format(sound)))
+    guild_vc[ctx.guild.id] = vc
     while vc.is_playing():
         await sleep(1)
+    vc.stop()
     await vc.disconnect()
 
 @bot.command()
@@ -28,7 +36,7 @@ async def add(ctx):
             file_url = att.proxy_url
             if '.mp3' in file_url:
                 print('File: {0}'.format(att.proxy_url))
-                os.system('wget -P . {}'.format(att.proxy_url))
+                os.system('wget -O . {}'.format(att.proxy_url))
             else:
                 await ctx.send('Tiene que ser un fichero .mp3 valido')
     except e:
