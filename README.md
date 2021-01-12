@@ -1,0 +1,2 @@
+# necibot
+Discord bot
