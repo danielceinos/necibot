@@ -1,10 +1,15 @@
-import discord, os, time, random
+import discord, os, time, random, datetime
 from asyncio import sleep
 from discord.ext import commands
 
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix = '!', intents = intents)
 guild_vc = {}
+
+def log(msg):
+    time = datetime.datetime.now()
+    datef = time.strftime("%d/%m/%Y %H:%M:%S")
+    print('{0} - {1}'.format(datef, msg))
 
 @bot.command()
 async def play(ctx, sound):
@@ -13,7 +18,7 @@ async def play(ctx, sound):
         vc = guild_vc[ctx.guild.id]
         vc.stop()
         await vc.disconnect()
-    print('Called play with {0}'.format(sound))
+    log('Called play with {0}'.format(sound))
     channel = ctx.author.voice.channel
     vc =  await channel.connect()
     player = vc.play(discord.FFmpegPCMAudio('./{0}.mp3'.format(sound)))
@@ -30,7 +35,7 @@ async def sounds(ctx):
 
 @bot.command()
 async def add(ctx):
-    print('Called add')
+    log('Called add')
     try:
         for att in ctx.message.attachments:
             file_url = att.proxy_url
@@ -46,13 +51,13 @@ async def add(ctx):
 quotes = []
 @bot.command()
 async def addquote(ctx, *, quote):
-    print('Called addquote')
+    log('Called addquote')
     quotes.append(quote)
     await ctx.send('Quote : \"{}\" added succesfully'.format(quote))
 
 @bot.command()
 async def quote(ctx):
-    print('Called quote')
+    log('Called quote')
     await ctx.send(random.choice(quotes))
 
 print('Init')
