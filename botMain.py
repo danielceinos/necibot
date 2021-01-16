@@ -32,6 +32,14 @@ async def play(ctx, sound):
     vc.stop()
     await vc.disconnect()
 
+@bot.command()
+async def stop(ctx):
+    await ctx.message.delete()
+    if ctx.guild.id in guild_vc:
+        vc = guild_vc[ctx.guild.id]
+        vc.stop()
+        await vc.disconnect()
+
 @bot.command(help = 'Devuelve la lista de sonidos disponibles para reproucir')
 async def sounds(ctx):
     files = [f.replace('.mp3', '') for f in os.listdir('.') if os.path.isfile(f) and 'mp3' in f]
@@ -69,10 +77,12 @@ async def playyt(ctx, link):
     log('Called playYt')
     valid_url = validators.url(link)
     if valid_url:
-        os.system('rm yt.mp3')
-        os.system('youtube-dl --extract-audio --audio-format mp3 -o "yt.mp3" {0}'.format(link))
-        print('Downloaded')
-        await play(ctx, 'yt')
+        guild_id = ctx.guild.id
+        yt_file_name = "yt-{0}".format(guild_id)
+        os.system('rm {0}.mp3'.format(yt_file_name))
+        os.system('youtube-dl --extract-audio --audio-format mp3 -o "{0}.mp3" {1}'.format(yt_file_name, link))
+        print('Downloaded {}'.format(yt_file_name))
+        await play(ctx, yt_file_name)
     else:
         await ctx.send('Malformed youtube url')
         
