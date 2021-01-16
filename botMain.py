@@ -25,7 +25,7 @@ async def play(ctx, sound):
     log('Called play with {0}'.format(sound))
     channel = ctx.author.voice.channel
     vc =  await channel.connect()
-    player = vc.play(discord.FFmpegPCMAudio('./{0}.mp3'.format(sound)))
+    player = vc.play(discord.FFmpegOpusAudio('./{0}.mp3'.format(sound)))
     guild_vc[ctx.guild.id] = vc
     while vc.is_playing():
         await sleep(1)
