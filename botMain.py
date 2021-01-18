@@ -1,6 +1,7 @@
-import discord, os, time, random, datetime, validators
+import discord, os, time, random, datetime, validators, asyncio
 from asyncio import sleep
 from discord.ext import commands
+from dateutil.parser import parse
 
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix = '!', intents = intents)
@@ -13,7 +14,7 @@ def log(msg):
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(activity = discord.Game(name = "!helpme"))
+    await bot.change_presence(activity = discord.Game(name = "!help"))
 
 @bot.command(help = 'Reproduce un sonido en el canal de voz en el que se encuentre el usuario')
 async def play(ctx, sound):
@@ -34,6 +35,7 @@ async def play(ctx, sound):
 
 @bot.command()
 async def stop(ctx):
+    log('Called stop')
     await ctx.message.delete()
     if ctx.guild.id in guild_vc:
         vc = guild_vc[ctx.guild.id]
@@ -42,6 +44,7 @@ async def stop(ctx):
 
 @bot.command(help = 'Devuelve la lista de sonidos disponibles para reproucir')
 async def sounds(ctx):
+    log('Called sounds')
     files = [f.replace('.mp3', '') for f in os.listdir('.') if os.path.isfile(f) and 'mp3' in f]
     await ctx.send('Sonidos disponibles:\n {0}'.format(files))
 
@@ -57,8 +60,8 @@ async def add(ctx):
             else:
                 await ctx.send('Tiene que ser un fichero .mp3 valido')
     except e:
-        await ctx.send('Un error ocurrió: {0}'.format(e))
-
+        dm_channel = await ctx.message.author.create_dm()
+        await dm_channel.send('Un error ocurrió: {0}'.format(e))
 
 quotes = []
 @bot.command()
@@ -84,8 +87,24 @@ async def playyt(ctx, link):
         print('Downloaded {}'.format(yt_file_name))
         await play(ctx, yt_file_name)
     else:
-        await ctx.send('Malformed youtube url')
-        
+        dm_channel = await ctx.message.author.create_dm()
+        await dm_channel.send('Malformed youtube url {0}'.format(link))
+
+@bot.command()
+async def remember(ctx, msg, time):
+    await ctx.message.delete()
+    try:
+        scheduled_time = parse(time)
+        td = scheduled_time - datetime.datetime.now()
+        seconds = td.seconds
+        print("Scheduled {0} at {1}".format(msg, scheduled_time))
+        await asyncio.sleep(seconds)
+        await ctx.send("{0} you told me to remember this:\n> {1}".format(ctx.message.author.mention, msg))
+    except Exception as inst:
+        print(inst)
+        dm_channel = await ctx.message.author.create_dm()
+        await dm_channel.send('Malformed date {0}'.format(time))
+
 print('Init')
 bot.run(os.getenv('DISCORD_TOKEN'))
 
