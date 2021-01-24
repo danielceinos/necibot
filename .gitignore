@@ -128,7 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-*.mp3
+/sounds/
+/avatar/
 reboot.sh
 start.sh
-
+usernames.txt
